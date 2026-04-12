@@ -8,9 +8,9 @@ interface TerminalPaneProps {
 }
 
 export function TerminalPane({ id, cwd, shell, onExit }: TerminalPaneProps) {
-  const { attach } = useTerminal({ id, cwd, shell, onExit });
+  const { containerRef } = useTerminal({ id, cwd, shell, onExit });
 
   return (
-    <div ref={attach} className="h-full w-full bg-bg-primary" />
+    <div ref={containerRef} className="h-full w-full bg-bg-primary" />
   );
 }

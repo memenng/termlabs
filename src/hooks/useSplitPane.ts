@@ -44,6 +44,12 @@ export function splitNode(
   };
 }
 
+export function getFirstLeafId(node: SplitNode): string | null {
+  if (node.type === "leaf") return node.terminalId;
+  if (node.children.length > 0) return getFirstLeafId(node.children[0]);
+  return null;
+}
+
 export function removeNode(root: SplitNode, targetId: string): SplitNode | null {
   if (root.type === "leaf") {
     return root.terminalId === targetId ? null : root;

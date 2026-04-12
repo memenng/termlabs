@@ -12,6 +12,8 @@ import {
 import { open } from "@tauri-apps/plugin-dialog";
 import { useProjectStore, type Project } from "../../stores/projectStore";
 import { useTabStore } from "../../stores/tabStore";
+import { getFirstLeafId } from "../../hooks/useSplitPane";
+import { ptyWrite } from "../../lib/ipc";
 
 interface ContextMenuState {
   visible: boolean;
@@ -57,6 +59,17 @@ export function ProjectTree() {
 
   const handleOpenTerminal = useCallback(
     (project: Project) => {
+      // If there's an active tab, cd to the project directory in its terminal
+      const state = useTabStore.getState();
+      const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
+      if (activeTab) {
+        const terminalId = getFirstLeafId(activeTab.splitRoot);
+        if (terminalId) {
+          ptyWrite(terminalId, `cd ${JSON.stringify(project.path)}\r`);
+          return;
+        }
+      }
+      // Fallback: open new tab if no active terminal
       addTab({ label: project.name, cwd: project.path });
     },
     [addTab]
@@ -79,10 +92,11 @@ export function ProjectTree() {
 
   const handleOpenFromMenu = useCallback(() => {
     if (contextMenu.project) {
-      handleOpenTerminal(contextMenu.project);
+      // Right-click "Open in Terminal" always opens a new tab
+      addTab({ label: contextMenu.project.name, cwd: contextMenu.project.path });
       setContextMenu((prev) => ({ ...prev, visible: false }));
     }
-  }, [contextMenu.project, handleOpenTerminal]);
+  }, [contextMenu.project, addTab]);
 
   const projectHasActiveTerminal = useCallback(
     (project: Project) => {

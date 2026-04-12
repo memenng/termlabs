@@ -59,7 +59,11 @@ impl PtyManager {
             writer: Arc::new(Mutex::new(writer)),
         };
 
-        self.sessions.lock().insert(id.clone(), session);
+        // Remove old session if it exists (e.g., on React remount after split)
+        let mut sessions = self.sessions.lock();
+        sessions.remove(&id);
+        sessions.insert(id.clone(), session);
+        drop(sessions);
 
         let sessions = self.sessions.clone();
         let pty_id = id.clone();
