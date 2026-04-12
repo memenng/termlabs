@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { IconPlus, IconX } from "@tabler/icons-react";
-import { useTabStore, type Tab } from "../../stores/tabStore";
+import {
+  IconPlus,
+  IconX,
+  IconLayoutColumns,
+  IconLayoutRows,
+  IconLayoutGrid,
+  IconSquare,
+} from "@tabler/icons-react";
+import { useTabStore, type Tab, type LayoutMode } from "../../stores/tabStore";
 import { cn } from "../../lib/cn";
 
 const SHELL_COLORS: Record<Tab["shellType"], string> = {
@@ -13,8 +20,16 @@ const SHELL_COLORS: Record<Tab["shellType"], string> = {
   custom: "#6366f1",
 };
 
+const LAYOUT_OPTIONS: { mode: LayoutMode; icon: typeof IconSquare; label: string }[] = [
+  { mode: "single", icon: IconSquare, label: "Single" },
+  { mode: "split-h", icon: IconLayoutColumns, label: "Split Horizontal" },
+  { mode: "split-v", icon: IconLayoutRows, label: "Split Vertical" },
+  { mode: "grid", icon: IconLayoutGrid, label: "Grid (4)" },
+];
+
 export function TabBar() {
-  const { tabs, activeTabId, setActiveTab, addTab, removeTab } = useTabStore();
+  const { tabs, activeTabId, layout, setActiveTab, addTab, removeTab, setLayout } =
+    useTabStore();
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -39,56 +54,82 @@ export function TabBar() {
 
   return (
     <div className="flex h-10 items-center bg-bg-secondary border-b border-border px-2 gap-1 select-none">
-      <AnimatePresence mode="popLayout">
-        {tabs.map((tab, idx) => (
-          <motion.button
-            key={tab.id}
-            layout
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.15 }}
-            draggable
-            onDragStart={() => handleDragStart(idx)}
-            onDragOver={(e) => handleDragOver(e, idx)}
-            onDragEnd={handleDragEnd}
-            onContextMenu={(e) => handleContextMenu(e, tab.id)}
-            onClick={() => setActiveTab(tab.id)}
+      {/* Tabs */}
+      <div className="flex items-center gap-1 flex-1 overflow-x-auto">
+        <AnimatePresence mode="popLayout">
+          {tabs.map((tab, idx) => (
+            <motion.button
+              key={tab.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.15 }}
+              draggable
+              onDragStart={() => handleDragStart(idx)}
+              onDragOver={(e) => handleDragOver(e, idx)}
+              onDragEnd={handleDragEnd}
+              onContextMenu={(e) => handleContextMenu(e, tab.id)}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "group relative flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer shrink-0",
+                tab.id === activeTabId
+                  ? "bg-bg-tertiary text-text-primary"
+                  : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50"
+              )}
+            >
+              <span
+                className="h-2 w-2 rounded-full shrink-0"
+                style={{ backgroundColor: SHELL_COLORS[tab.shellType] }}
+              />
+              <span className="truncate max-w-[120px]">{tab.label}</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeTab(tab.id);
+                }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:text-danger"
+              >
+                <IconX size={12} />
+              </span>
+            </motion.button>
+          ))}
+        </AnimatePresence>
+
+        <button
+          onClick={() => addTab()}
+          className="flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50 transition-colors shrink-0"
+        >
+          <IconPlus size={14} />
+        </button>
+      </div>
+
+      {/* Layout buttons */}
+      <div className="flex items-center gap-0.5 ml-2 border-l border-border pl-2">
+        {LAYOUT_OPTIONS.map(({ mode, icon: Icon, label }) => (
+          <button
+            key={mode}
+            onClick={() => setLayout(mode)}
+            title={label}
             className={cn(
-              "group relative flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer",
-              tab.id === activeTabId
-                ? "bg-bg-tertiary text-text-primary"
+              "flex items-center justify-center h-7 w-7 rounded-md transition-colors",
+              layout === mode
+                ? "bg-accent/20 text-accent"
                 : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50"
             )}
           >
-            <span
-              className="h-2 w-2 rounded-full shrink-0"
-              style={{ backgroundColor: SHELL_COLORS[tab.shellType] }}
-            />
-            <span className="truncate max-w-[120px]">{tab.label}</span>
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                removeTab(tab.id);
-              }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:text-danger"
-            >
-              <IconX size={12} />
-            </span>
-          </motion.button>
+            <Icon size={14} />
+          </button>
         ))}
-      </AnimatePresence>
+      </div>
 
-      <button
-        onClick={() => addTab()}
-        className="flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50 transition-colors ml-1"
-      >
-        <IconPlus size={14} />
-      </button>
-
+      {/* Context menu */}
       {contextMenu && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setContextMenu(null)}
+          />
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -99,7 +140,8 @@ export function TabBar() {
               className="w-full px-3 py-1.5 text-left hover:bg-bg-tertiary text-text-secondary hover:text-text-primary"
               onClick={() => {
                 const name = prompt("Tab name:");
-                if (name) useTabStore.getState().renameTab(contextMenu.tabId, name);
+                if (name)
+                  useTabStore.getState().renameTab(contextMenu.tabId, name);
                 setContextMenu(null);
               }}
             >

@@ -3,7 +3,7 @@ import { useTabStore } from "../tabStore";
 
 describe("tabStore", () => {
   beforeEach(() => {
-    useTabStore.setState({ tabs: [], activeTabId: null });
+    useTabStore.setState({ tabs: [], activeTabId: null, layout: "single", visibleTabIds: [] });
   });
 
   it("adds a tab and sets it active", () => {

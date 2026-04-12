@@ -12,7 +12,6 @@ import {
 import { open } from "@tauri-apps/plugin-dialog";
 import { useProjectStore, type Project } from "../../stores/projectStore";
 import { useTabStore } from "../../stores/tabStore";
-import { getFirstLeafId } from "../../hooks/useSplitPane";
 import { ptyWrite } from "../../lib/ipc";
 
 interface ContextMenuState {
@@ -63,13 +62,9 @@ export function ProjectTree() {
       const state = useTabStore.getState();
       const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
       if (activeTab) {
-        const terminalId = getFirstLeafId(activeTab.splitRoot);
-        if (terminalId) {
-          // Escape single quotes in path for shell safety
-          const escapedPath = project.path.replace(/'/g, "'\\''");
-          ptyWrite(terminalId, `cd '${escapedPath}'\n`);
-          return;
-        }
+        const escapedPath = project.path.replace(/'/g, "'\\''");
+        ptyWrite(activeTab.terminalId, `cd '${escapedPath}'\n`);
+        return;
       }
       // Fallback: open new tab if no active terminal
       addTab({ label: project.name, cwd: project.path });
