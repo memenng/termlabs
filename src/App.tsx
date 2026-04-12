@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
+import { TitleBar } from "./components/layout/TitleBar";
 import { TabBar } from "./components/layout/TabBar";
 import { Sidebar } from "./components/layout/Sidebar";
 import { TerminalTab } from "./components/terminal/TerminalTab";
@@ -59,17 +60,20 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen w-screen bg-bg-primary text-text-primary font-sans">
-      <Sidebar
-        onNavigate={handleNavigate}
-        activeView={activeView}
-        onSshAdd={handleSshAdd}
-        onSshEdit={handleSshEdit}
-        onKeyManager={() => setModal("key-manager")}
-      />
-      <div className="flex flex-col flex-1 min-w-0">
-        <TabBar />
-        <TerminalTab />
+    <div className="flex flex-col h-screen w-screen bg-bg-primary text-text-primary font-sans">
+      <TitleBar />
+      <div className="flex flex-1 min-h-0">
+        <Sidebar
+          onNavigate={handleNavigate}
+          activeView={activeView}
+          onSshAdd={handleSshAdd}
+          onSshEdit={handleSshEdit}
+          onKeyManager={() => setModal("key-manager")}
+        />
+        <div className="flex flex-col flex-1 min-w-0">
+          <TabBar />
+          <TerminalTab />
+        </div>
       </div>
 
       <AnimatePresence>
