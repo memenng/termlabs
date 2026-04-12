@@ -50,6 +50,11 @@ export function getFirstLeafId(node: SplitNode): string | null {
   return null;
 }
 
+export function getAllLeafIds(node: SplitNode): string[] {
+  if (node.type === "leaf") return [node.terminalId];
+  return node.children.flatMap(getAllLeafIds);
+}
+
 export function removeNode(root: SplitNode, targetId: string): SplitNode | null {
   if (root.type === "leaf") {
     return root.terminalId === targetId ? null : root;

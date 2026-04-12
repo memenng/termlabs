@@ -4,7 +4,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { SearchAddon } from "@xterm/addon-search";
 import { Channel } from "@tauri-apps/api/core";
-import { ptySpawn, ptyWrite, ptyResize, ptyClose } from "../lib/ipc";
+import { ptySpawn, ptyWrite, ptyResize } from "../lib/ipc";
 import type { PtyEvent } from "../lib/ipc";
 import "@xterm/xterm/css/xterm.css";
 import "../styles/terminal.css";
@@ -126,7 +126,10 @@ export function useTerminal(options: UseTerminalOptions) {
       dataDisposable.dispose();
       resizeDisposable.dispose();
       terminal.dispose();
-      ptyClose(id);
+      // Do NOT call ptyClose here — the PTY lifecycle is managed by the store.
+      // When React remounts during split, the new ptySpawn will replace the old
+      // session in the Rust backend. Calling ptyClose here causes a race condition
+      // where the PTY is closed just before the new spawn tries to use it.
       terminalRef.current = null;
       fitAddonRef.current = null;
       searchAddonRef.current = null;

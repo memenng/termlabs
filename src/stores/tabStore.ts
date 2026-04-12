@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { SplitNode, SplitDirection } from "../hooks/useSplitPane";
-import { createLeaf, splitNode, removeNode } from "../hooks/useSplitPane";
+import { createLeaf, splitNode, removeNode, getAllLeafIds } from "../hooks/useSplitPane";
+import { ptyClose } from "../lib/ipc";
 
 export interface Tab {
   id: string;
@@ -74,6 +75,11 @@ export const useTabStore = create<TabState>((set, get) => ({
   },
 
   removeTab: (id) => {
+    // Close all PTY sessions in this tab before removing
+    const tab = get().tabs.find((t) => t.id === id);
+    if (tab) {
+      getAllLeafIds(tab.splitRoot).forEach((tid) => ptyClose(tid));
+    }
     set((state) => {
       const idx = state.tabs.findIndex((t) => t.id === id);
       const newTabs = state.tabs.filter((t) => t.id !== id);
@@ -124,6 +130,8 @@ export const useTabStore = create<TabState>((set, get) => ({
   },
 
   closeTerminal: (tabId, terminalId) => {
+    // Explicitly close this PTY session
+    ptyClose(terminalId);
     set((state) => {
       const tab = state.tabs.find((t) => t.id === tabId);
       if (!tab) return state;
