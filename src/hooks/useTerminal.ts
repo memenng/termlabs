@@ -105,11 +105,19 @@ export function useTerminal(options: UseTerminalOptions) {
     });
 
     const resizeDisposable = terminal.onResize(({ rows, cols }) => {
-      ptyResize(id, rows, cols);
+      if (rows > 0 && cols > 0) {
+        ptyResize(id, rows, cols);
+      }
     });
 
-    const resizeObserver = new ResizeObserver(() => {
-      fitAddon.fit();
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // Don't resize when container is hidden (0x0) — prevents PTY from dying
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          fitAddon.fit();
+        }
+      }
     });
     resizeObserver.observe(container);
 

@@ -101,6 +101,10 @@ impl PtyManager {
     }
 
     pub fn resize(&self, id: &str, rows: u16, cols: u16) -> Result<(), String> {
+        // Ignore zero-size resize (happens when terminal container is hidden)
+        if rows == 0 || cols == 0 {
+            return Ok(());
+        }
         let sessions = self.sessions.lock();
         let session = sessions.get(id).ok_or("Session not found")?;
         let result = session.master.lock().resize(PtySize { rows, cols, pixel_width: 0, pixel_height: 0 })

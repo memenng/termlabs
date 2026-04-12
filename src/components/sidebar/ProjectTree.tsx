@@ -59,13 +59,15 @@ export function ProjectTree() {
 
   const handleOpenTerminal = useCallback(
     (project: Project) => {
-      // If there's an active tab, cd to the project directory in its terminal
+      // cd to the project directory in the active terminal
       const state = useTabStore.getState();
       const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
       if (activeTab) {
         const terminalId = getFirstLeafId(activeTab.splitRoot);
         if (terminalId) {
-          ptyWrite(terminalId, `cd ${JSON.stringify(project.path)}\r`);
+          // Escape single quotes in path for shell safety
+          const escapedPath = project.path.replace(/'/g, "'\\''");
+          ptyWrite(terminalId, `cd '${escapedPath}'\n`);
           return;
         }
       }
