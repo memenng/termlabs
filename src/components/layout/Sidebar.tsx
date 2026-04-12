@@ -8,7 +8,11 @@ import {
   IconPinFilled,
 } from "@tabler/icons-react";
 import { useSidebarStore } from "../../stores/sidebarStore";
+import { useTabStore } from "../../stores/tabStore";
 import { cn } from "../../lib/cn";
+import { ProjectTree } from "../sidebar/ProjectTree";
+import { SSHTree } from "../sidebar/SSHTree";
+import type { SshConnection } from "../../stores/sshStore";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -48,10 +52,21 @@ function SidebarItem({ icon, label, onClick, active }: SidebarItemProps) {
 interface SidebarProps {
   onNavigate: (view: "projects" | "ssh" | "settings" | "about") => void;
   activeView: string;
+  onSshAdd: () => void;
+  onSshEdit: (conn: SshConnection) => void;
+  onKeyManager: () => void;
 }
 
-export function Sidebar({ onNavigate, activeView }: SidebarProps) {
+export function Sidebar({ onNavigate, activeView, onSshAdd, onSshEdit, onKeyManager }: SidebarProps) {
   const { open, pinned, setOpen, togglePin } = useSidebarStore();
+  const { addTab } = useTabStore();
+
+  const handleSshConnect = (conn: SshConnection) => {
+    addTab({
+      label: conn.name,
+      shellType: "ssh",
+    });
+  };
 
   return (
     <motion.aside
@@ -80,7 +95,7 @@ export function Sidebar({ onNavigate, activeView }: SidebarProps) {
         )}
       </div>
 
-      <div className="flex flex-col gap-1 px-2 flex-1">
+      <div className="flex flex-col gap-1 px-2">
         <SidebarItem
           icon={<IconFolder size={20} />}
           label="Projects"
@@ -95,18 +110,33 @@ export function Sidebar({ onNavigate, activeView }: SidebarProps) {
         />
       </div>
 
+      {/* Tree panels when sidebar is open */}
+      {open && (
+        <div className="flex-1 overflow-y-auto mt-2 border-t border-border pt-2">
+          {activeView === "projects" && <ProjectTree />}
+          {activeView === "ssh" && (
+            <SSHTree
+              onConnect={handleSshConnect}
+              onAdd={onSshAdd}
+              onEdit={onSshEdit}
+              onKeyManager={onKeyManager}
+            />
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col gap-1 px-2 border-t border-border pt-2 mt-2">
         <SidebarItem
           icon={<IconSettings size={20} />}
           label="Settings"
           onClick={() => onNavigate("settings")}
-          active={activeView === "settings"}
+          active={false}
         />
         <SidebarItem
           icon={<IconInfoCircle size={20} />}
           label="About"
           onClick={() => onNavigate("about")}
-          active={activeView === "about"}
+          active={false}
         />
       </div>
     </motion.aside>
