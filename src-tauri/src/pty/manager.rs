@@ -2,13 +2,17 @@ use parking_lot::Mutex;
 use portable_pty::{native_pty_system, CommandBuilder, MasterPty, PtySize};
 use std::collections::HashMap;
 use std::io::{BufReader, Read, Write};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::thread;
 use tauri::ipc::Channel;
 
+static GENERATION: AtomicU64 = AtomicU64::new(0);
+
 pub struct PtySession {
     master: Arc<Mutex<Box<dyn MasterPty + Send>>>,
     writer: Arc<Mutex<Box<dyn Write + Send>>>,
+    generation: u64,
 }
 
 pub struct PtyManager {
@@ -54,9 +58,12 @@ impl PtyManager {
         let reader = pair.master.try_clone_reader().map_err(|e| format!("Failed to clone reader: {e}"))?;
         let writer = pair.master.take_writer().map_err(|e| format!("Failed to take writer: {e}"))?;
 
+        let gen = GENERATION.fetch_add(1, Ordering::SeqCst);
+
         let session = PtySession {
             master: Arc::new(Mutex::new(pair.master)),
             writer: Arc::new(Mutex::new(writer)),
+            generation: gen,
         };
 
         // Remove old session if it exists (e.g., on React remount after split)
@@ -73,17 +80,27 @@ impl PtyManager {
             loop {
                 match buf_reader.read(&mut buf) {
                     Ok(0) => {
-                        let _ = on_data.send(PtyEvent::Exit { id: pty_id.clone() });
-                        sessions.lock().remove(&pty_id);
+                        // Only remove session if generation matches (prevent old thread killing new session)
+                        let mut map = sessions.lock();
+                        if map.get(&pty_id).map_or(false, |s| s.generation == gen) {
+                            let _ = on_data.send(PtyEvent::Exit { id: pty_id.clone() });
+                            map.remove(&pty_id);
+                        }
                         break;
                     }
                     Ok(n) => {
                         let data = String::from_utf8_lossy(&buf[..n]).to_string();
-                        let _ = on_data.send(PtyEvent::Data { id: pty_id.clone(), data });
+                        // Silently stop if send fails (channel dead = old component unmounted)
+                        if on_data.send(PtyEvent::Data { id: pty_id.clone(), data }).is_err() {
+                            break;
+                        }
                     }
                     Err(_) => {
-                        let _ = on_data.send(PtyEvent::Exit { id: pty_id.clone() });
-                        sessions.lock().remove(&pty_id);
+                        let mut map = sessions.lock();
+                        if map.get(&pty_id).map_or(false, |s| s.generation == gen) {
+                            let _ = on_data.send(PtyEvent::Exit { id: pty_id.clone() });
+                            map.remove(&pty_id);
+                        }
                         break;
                     }
                 }
@@ -101,7 +118,6 @@ impl PtyManager {
     }
 
     pub fn resize(&self, id: &str, rows: u16, cols: u16) -> Result<(), String> {
-        // Ignore zero-size resize (happens when terminal container is hidden)
         if rows == 0 || cols == 0 {
             return Ok(());
         }
