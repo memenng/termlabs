@@ -1,0 +1,20 @@
+@font-face {
+  font-family: "Satoshi";
+  src: url("https://cdn.fontshare.com/wf/ZFHXAYXQCBGSTXR7I2FX3AWNSFCG55PO/KWRXR5XBUD3VN6J3JGFOFGPC3TYA7WFU/NHJNQWTLX63EWOMVQ42MZCJ7M6LXHKAO.woff2") format("woff2");
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/fonts/webfonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/fonts/webfonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}

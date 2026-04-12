@@ -1,10 +1,8 @@
 function App() {
   return (
-    <div>
-      <h1>TermLabs</h1>
-      <p>Cross-platform terminal emulator</p>
+    <div data-theme="dark" className="flex h-screen w-screen bg-bg-primary text-text-primary font-sans">
+      <p className="m-auto text-2xl font-bold">TermLabs</p>
     </div>
   );
 }
-
 export default App;
