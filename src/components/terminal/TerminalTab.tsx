@@ -2,7 +2,7 @@ import { useTabStore, type LayoutMode } from "../../stores/tabStore";
 import { TerminalPane } from "./TerminalPane";
 import { cn } from "../../lib/cn";
 
-function getLayoutStyle(
+function getSlotStyle(
   layout: LayoutMode,
   slotIndex: number,
   totalSlots: number
@@ -45,6 +45,15 @@ function getLayoutStyle(
   };
 }
 
+const HIDDEN_STYLE: React.CSSProperties = {
+  position: "absolute",
+  width: 0,
+  height: 0,
+  overflow: "hidden",
+  opacity: 0,
+  pointerEvents: "none",
+};
+
 export function TerminalTab() {
   const { tabs, visibleTabIds, layout, activeTabId, setActiveTab } = useTabStore();
 
@@ -58,34 +67,22 @@ export function TerminalTab() {
 
   return (
     <div className="flex-1 overflow-hidden relative">
-      {/* Always render ALL TerminalPanes — never unmount them */}
       {tabs.map((tab) => {
         const slotIndex = visibleTabIds.indexOf(tab.id);
         const isVisible =
           layout === "single"
             ? tab.id === activeTabId
             : slotIndex !== -1;
-
-        if (!isVisible) {
-          // Hidden but still mounted — keeps PTY alive
-          return (
-            <div
-              key={tab.id}
-              style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" }}
-            >
-              <TerminalPane id={tab.terminalId} cwd={tab.cwd} shell={tab.shell} />
-            </div>
-          );
-        }
-
-        const style = getLayoutStyle(layout, layout === "single" ? 0 : slotIndex, visibleTabIds.length);
         const isActive = tab.id === activeTabId;
-        const showLabel = layout !== "single";
+        const showLabel = isVisible && layout !== "single";
+        const style = isVisible
+          ? getSlotStyle(layout, layout === "single" ? 0 : slotIndex, visibleTabIds.length)
+          : HIDDEN_STYLE;
 
         return (
           <div
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={isVisible ? () => setActiveTab(tab.id) : undefined}
             style={style}
             className={cn(
               "overflow-hidden",
@@ -93,11 +90,15 @@ export function TerminalTab() {
               showLabel && isActive && "border-accent",
             )}
           >
-            {showLabel && (
-              <div className="absolute top-0 left-0 right-0 z-10 flex items-center px-2 py-0.5 bg-bg-secondary/80 text-[10px] text-text-secondary">
-                <span className="truncate">{tab.label}</span>
-              </div>
-            )}
+            {/* Identical structure for all tabs — only CSS changes */}
+            <div
+              className={cn(
+                "absolute top-0 left-0 right-0 z-10 flex items-center px-2 py-0.5 bg-bg-secondary/80 text-[10px] text-text-secondary",
+                !showLabel && "hidden"
+              )}
+            >
+              <span className="truncate">{tab.label}</span>
+            </div>
             <div className={cn("h-full w-full", showLabel && "pt-5")}>
               <TerminalPane id={tab.terminalId} cwd={tab.cwd} shell={tab.shell} />
             </div>
