@@ -49,10 +49,10 @@ export function Sidebar({ onNavigate, activeView, onSshAdd, onSshEdit, onKeyMana
           animate={{ width: 260, opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 34 }}
-          className="sidebar-glass glass-border flex flex-col h-full overflow-hidden shrink-0 relative z-10"
+          className="sidebar-glass glass-border flex flex-col h-full overflow-hidden shrink-0 relative z-10 rounded-xl"
         >
-          {/* Traffic light spacer + drag region */}
-          <div data-tauri-drag-region className="h-[52px] shrink-0" />
+          {/* Top spacer */}
+          <div className="h-3 shrink-0" />
 
           {/* Section switcher */}
           <div className="flex items-center gap-1 px-4 mb-3">

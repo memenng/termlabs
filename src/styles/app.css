@@ -31,7 +31,7 @@ body,
   width: 100%;
   overflow: hidden;
   font-family: var(--font-sans);
-  background-color: var(--color-bg-primary);
+  background-color: var(--color-bg-secondary);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
