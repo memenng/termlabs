@@ -25,7 +25,7 @@ export function Sidebar({ onNavigate, activeView, onSshAdd, onSshEdit, onKeyMana
   const { open, toggle } = useSidebarStore();
   const { addTab } = useTabStore();
 
-  // Keyboard shortcut: Cmd+B to toggle sidebar (like Apple Notes)
+  // Cmd+B to toggle sidebar
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "b") {
@@ -49,10 +49,10 @@ export function Sidebar({ onNavigate, activeView, onSshAdd, onSshEdit, onKeyMana
           animate={{ width: 260, opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 34 }}
-          className="sidebar-glass glass-border flex flex-col h-full overflow-hidden shrink-0 relative z-10 rounded-xl"
+          className="sidebar-glass glass-border flex flex-col h-full overflow-hidden shrink-0 relative z-10 rounded-b-xl"
         >
-          {/* Top spacer */}
-          <div className="h-3 shrink-0" />
+          {/* Traffic light area — drag region so window can be moved */}
+          <div data-tauri-drag-region className="h-[38px] shrink-0" />
 
           {/* Section switcher */}
           <div className="flex items-center gap-1 px-4 mb-3">
@@ -98,7 +98,7 @@ export function Sidebar({ onNavigate, activeView, onSshAdd, onSshEdit, onKeyMana
             )}
           </div>
 
-          {/* Footer — settings & about */}
+          {/* Footer */}
           <div className="px-4 py-3 border-t border-border">
             <div className="flex items-center gap-1">
               <button

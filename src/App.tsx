@@ -46,32 +46,34 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-screen bg-transparent text-text-primary font-sans overflow-hidden flex flex-col">
-      {/* Drag region for traffic lights */}
-      <div data-tauri-drag-region className="h-[52px] shrink-0" />
+    <div className="h-screen w-screen bg-bg-secondary text-text-primary font-sans overflow-hidden flex gap-[1px] p-2 pt-0">
+      {/* Sidebar panel — extends to top, traffic lights sit inside */}
+      <Sidebar
+        onNavigate={handleNavigate}
+        activeView={activeView}
+        onSshAdd={() => {
+          setEditingSshConnection(null);
+          setModal("ssh-form");
+        }}
+        onSshEdit={(conn) => {
+          setEditingSshConnection(conn);
+          setModal("ssh-form");
+        }}
+        onKeyManager={() => setModal("key-manager")}
+      />
 
-      {/* Main layout: floating panels inside window */}
-      <div className="flex flex-1 min-h-0 gap-[1px] px-2 pb-2">
-        {/* Sidebar panel — rounded floating card */}
-        <Sidebar
-          onNavigate={handleNavigate}
-          activeView={activeView}
-          onSshAdd={() => {
-            setEditingSshConnection(null);
-            setModal("ssh-form");
-          }}
-          onSshEdit={(conn) => {
-            setEditingSshConnection(conn);
-            setModal("ssh-form");
-          }}
-          onKeyManager={() => setModal("key-manager")}
-        />
-
-        {/* Content panel — rounded floating card */}
-        <div className="flex flex-col flex-1 min-w-0 bg-bg-primary rounded-xl overflow-hidden">
+      {/* Content panel — extends to top */}
+      <div className="flex flex-col flex-1 min-w-0 bg-bg-primary rounded-b-xl overflow-hidden">
+        {/* Top area: drag region + tab bar, aligned with traffic lights */}
+        <div
+          data-tauri-drag-region
+          className="shrink-0 flex items-end pt-[38px] px-1"
+        >
           <TabBar />
-          <TerminalTab />
         </div>
+
+        {/* Terminal area */}
+        <TerminalTab />
       </div>
 
       {/* Modals */}
