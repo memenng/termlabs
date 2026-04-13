@@ -36,6 +36,7 @@ export function TabBar() {
     y: number;
     tabId: string;
   } | null>(null);
+  const [maxNotice, setMaxNotice] = useState(false);
 
   const handleDragStart = (idx: number) => setDragIdx(idx);
   const handleDragOver = (e: React.DragEvent, idx: number) => {
@@ -97,8 +98,20 @@ export function TabBar() {
         </AnimatePresence>
 
         <button
-          onClick={() => addTab()}
-          className="flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50 transition-colors shrink-0"
+          onClick={() => {
+            if (tabs.length >= 4) {
+              setMaxNotice(true);
+              setTimeout(() => setMaxNotice(false), 2000);
+            } else {
+              addTab();
+            }
+          }}
+          className={cn(
+            "flex items-center justify-center h-7 w-7 rounded-md transition-colors shrink-0",
+            tabs.length >= 4
+              ? "text-text-tertiary cursor-not-allowed"
+              : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50"
+          )}
         >
           <IconPlus size={14} />
         </button>
@@ -168,6 +181,19 @@ export function TabBar() {
           </motion.div>
         </>
       )}
+      {/* Max tabs notification */}
+      <AnimatePresence>
+        {maxNotice && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-bg-elevated border border-border text-xs text-text-secondary shadow-lg"
+          >
+            Maximum 4 tabs
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
