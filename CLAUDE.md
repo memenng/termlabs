@@ -1,6 +1,6 @@
 # TermLabs
 
-Cross-platform terminal emulator built with Tauri v2.
+Cross-platform terminal emulator built with Tauri v2. Version 0.2.0.
 
 ## Tech Stack
 
@@ -11,7 +11,7 @@ Cross-platform terminal emulator built with Tauri v2.
 - **Animation:** Motion (`motion/react`) — NOT framer-motion
 - **Terminal:** xterm.js + WebGL addon + FitAddon + SearchAddon
 - **State:** Zustand
-- **Fonts:** Satoshi (UI), JetBrains Mono (terminal)
+- **Fonts:** Satoshi (UI), JetBrains Mono (terminal) — bundled locally in `public/fonts/`
 - **Icons:** @tabler/icons-react
 
 ## Architecture
@@ -20,7 +20,7 @@ Cross-platform terminal emulator built with Tauri v2.
 
 ```
 src-tauri/src/
-  pty/          # PTY session management (portable-pty)
+  pty/          # PTY session management (portable-pty) + SSH spawn
   ssh/          # SSH connections, config parser, key management (ssh2)
   config/       # App settings, project list persistence
   commands/     # Tauri IPC command handlers
@@ -31,6 +31,7 @@ src/
   hooks/        # Custom hooks (useTerminal, useTheme)
   lib/          # Utilities (cn, ipc wrappers)
   styles/       # Tailwind entry, fonts, terminal CSS
+  public/       # Static assets (fonts, icons)
 ```
 
 ## Key Patterns
@@ -40,23 +41,41 @@ src/
 - Frontend communicates via Tauri IPC commands + Channel API for streaming
 - PTY is NOT closed on React component unmount — only on explicit tab/terminal close via store actions
 - Each `PtySession` has a `generation` field; reader threads check generation before removing sessions
+- SSH connections spawn via `pty_spawn_ssh` command (runs `ssh` CLI via PTY)
 
 ### Terminal Rendering
 - `useTerminal` hook manages xterm.js lifecycle via `useEffect` (not ref callback)
+- ALL TerminalPanes are always mounted — identical JSX structure, visibility via CSS only
 - ResizeObserver skips `fit()` when container is hidden (0x0) to prevent PTY death
 - PTY resize ignores 0x0 (guarded in both frontend and Rust backend)
 - React StrictMode is disabled — incompatible with native PTY resource management
+- `terminal.onTitleChange` auto-updates tab labels with current directory
 
 ### Layout System
-- Each tab = 1 terminal with its own PTY
-- Layout modes: `single` | `split-h` | `split-v` | `grid` (max 4 visible)
+- Each tab = 1 terminal with its own PTY (max 4 tabs)
+- Layout modes: `single` | `split-h` | `split-v` | `grid`
 - Split view shows EXISTING tabs side by side (does NOT create new terminals)
-- Layout buttons in TabBar (right side)
+- Layout buttons pinned right in TabBar (shrink-0)
+- Positions are persistent: tab order = layout position (no reorder on click)
 
 ### Sidebar
-- Aceternity-style collapsible sidebar (hover to expand, click pin to keep open)
-- ProjectTree: click folder = `cd` in active terminal; right-click = open new tab
-- SSHTree: grouped connections with status indicators
+- Apple Notes style: floating glass panel with backdrop-blur
+- Toggle via `Cmd+B` keyboard shortcut (no visible toggle button)
+- ProjectTree: click folder = `cd` in active terminal; right-click = open new tab; auto-sort A-Z
+- SSHTree: grouped connections with status indicators; click = open SSH tab
+
+### Keyboard Shortcuts
+- `Cmd+T` — new tab (max 4)
+- `Cmd+W` — close active tab
+- `Cmd+1-4` — switch to tab N
+- `Cmd+B` — toggle sidebar
+- `Cmd+F` — search in terminal
+
+### Design
+- macOS native title bar with `titleBarStyle: Overlay` (traffic lights in sidebar)
+- Floating rounded panels (sidebar glass + content bg-primary)
+- Dark theme default, Satoshi font UI, JetBrains Mono terminal
+- Modals don't close on outside click — only via X button or Escape
 
 ## Commands
 
@@ -68,7 +87,7 @@ npm run dev                # Vite dev server only
 
 # Testing
 npx vitest run             # Run all tests
-npm run typecheck           # TypeScript check (tsc --noEmit)
+npm run typecheck          # TypeScript check (tsc --noEmit)
 
 # Rust
 cd src-tauri && cargo build           # Build backend
@@ -82,11 +101,20 @@ npm run format             # Prettier write
 npm run format:check       # Prettier check
 
 # Release
-cargo tauri build          # Build installer (per platform)
+npm run tauri build        # Build installer (per platform)
+```
+
+## Install (macOS)
+
+```bash
+npm run tauri build
+rm -rf /Applications/TermLabs.app
+cp -R src-tauri/target/release/bundle/macos/TermLabs.app /Applications/
+open /Applications/TermLabs.app
 ```
 
 ## Build Outputs
-- macOS: `.dmg`
+- macOS: `.dmg` + `.app`
 - Windows: `.msi` / `.exe`
 - Linux: `.deb` / `.AppImage`
 
@@ -95,8 +123,9 @@ cargo tauri build          # Build installer (per platform)
 - SSH connections: `~/.config/termlabs/ssh_connections.json`
 - Projects list: `~/.config/termlabs/projects.json`
 
-## Known Issues / TODOs
-- SFTP file browser not yet implemented
-- SSH terminal session (connect via SSH in tab) not yet wired up
-- Keyboard shortcuts customization UI exists but not wired to terminal
-- Auto-updater not configured (needs Tauri updater endpoint)
+## Nice to Have (Future)
+- SFTP file browser
+- Terminal color scheme picker
+- Session restore on app restart
+- Auto-updater (Tauri updater endpoint)
+- Command snippets / palette
