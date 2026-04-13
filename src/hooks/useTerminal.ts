@@ -145,9 +145,25 @@ export function useTerminal(options: UseTerminalOptions) {
     searchAddonRef.current?.findNext(query);
   };
 
+  const searchNext = (query: string) => {
+    searchAddonRef.current?.findNext(query);
+  };
+
+  const searchPrevious = (query: string) => {
+    searchAddonRef.current?.findPrevious(query);
+  };
+
+  const clearSearch = () => {
+    searchAddonRef.current?.clearDecorations();
+  };
+
+  const focus = () => {
+    terminalRef.current?.focus();
+  };
+
   const fit = () => {
     fitAddonRef.current?.fit();
   };
 
-  return { containerRef, search, fit, terminal: terminalRef };
+  return { containerRef, search, searchNext, searchPrevious, clearSearch, focus, fit, terminal: terminalRef };
 }
