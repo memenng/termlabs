@@ -55,7 +55,7 @@ export function TabBar() {
   return (
     <div className="flex h-10 items-center bg-bg-secondary border-b border-border px-2 gap-1 select-none">
       {/* Tabs */}
-      <div className="flex items-center gap-1 flex-1 overflow-x-auto">
+      <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
         <AnimatePresence mode="popLayout">
           {tabs.map((tab, idx) => (
             <motion.button
@@ -104,8 +104,8 @@ export function TabBar() {
         </button>
       </div>
 
-      {/* Layout buttons */}
-      <div className="flex items-center gap-0.5 ml-2 border-l border-border pl-2">
+      {/* Layout buttons — always pinned right */}
+      <div className="flex items-center gap-0.5 ml-2 border-l border-border pl-2 shrink-0">
         {LAYOUT_OPTIONS.map(({ mode, icon: Icon, label }) => (
           <button
             key={mode}
