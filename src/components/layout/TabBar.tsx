@@ -53,7 +53,7 @@ export function TabBar() {
   };
 
   return (
-    <div className="flex h-10 items-center bg-bg-secondary border-b border-border px-2 gap-1 select-none">
+    <div className="flex h-10 w-full items-center border-b border-border px-2 gap-1 select-none overflow-hidden">
       {/* Tabs */}
       <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
         <AnimatePresence mode="popLayout">
