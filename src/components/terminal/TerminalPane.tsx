@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTerminal } from "../../hooks/useTerminal";
+import type { SshConfig } from "../../stores/tabStore";
 
 interface TerminalPaneProps {
   id: string;
   cwd?: string;
   shell?: string;
+  sshConfig?: SshConfig;
   onExit?: (id: string) => void;
 }
 
-export function TerminalPane({ id, cwd, shell, onExit }: TerminalPaneProps) {
-  const { containerRef, search, clearSearch, focus } = useTerminal({ id, cwd, shell, onExit });
+export function TerminalPane({ id, cwd, shell, sshConfig, onExit }: TerminalPaneProps) {
+  const { containerRef, search, clearSearch, focus } = useTerminal({ id, cwd, shell, sshConfig, onExit });
   const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);

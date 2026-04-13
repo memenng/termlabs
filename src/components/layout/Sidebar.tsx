@@ -38,7 +38,21 @@ export function Sidebar({ onNavigate, activeView, onSshAdd, onSshEdit, onKeyMana
   }, [toggle]);
 
   const handleSshConnect = (conn: SshConnection) => {
-    addTab({ label: conn.name, shellType: "ssh" });
+    const authMethod = conn.auth_method;
+    const keyPath =
+      typeof authMethod === "object" && authMethod !== null && "Key" in authMethod
+        ? authMethod.Key.key_path
+        : undefined;
+    addTab({
+      label: `SSH: ${conn.host}`,
+      shellType: "ssh",
+      sshConfig: {
+        hostname: conn.host,
+        port: conn.port,
+        username: conn.username,
+        keyPath,
+      },
+    });
   };
 
   return (

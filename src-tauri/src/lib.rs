@@ -11,7 +11,7 @@ use commands::ssh::{
 };
 use config::app::AppConfigManager;
 use config::projects::ProjectManager;
-use pty::handler::{pty_close, pty_resize, pty_spawn, pty_write};
+use pty::handler::{pty_close, pty_resize, pty_spawn, pty_spawn_ssh, pty_write};
 use pty::manager::PtyManager;
 use ssh::connection::SshConnectionManager;
 use tauri::Manager;
@@ -38,6 +38,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             pty_spawn,
+            pty_spawn_ssh,
             pty_write,
             pty_resize,
             pty_close,

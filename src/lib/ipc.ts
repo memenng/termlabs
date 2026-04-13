@@ -22,6 +22,28 @@ export function ptySpawn(opts: {
   });
 }
 
+export function ptySpawnSsh(opts: {
+  id: string;
+  rows: number;
+  cols: number;
+  hostname: string;
+  port: number;
+  username: string;
+  keyPath?: string;
+  onData: Channel<PtyEvent>;
+}): Promise<void> {
+  return invoke("pty_spawn_ssh", {
+    id: opts.id,
+    rows: opts.rows,
+    cols: opts.cols,
+    hostname: opts.hostname,
+    port: opts.port,
+    username: opts.username,
+    keyPath: opts.keyPath ?? null,
+    onData: opts.onData,
+  });
+}
+
 export function ptyWrite(id: string, data: string): Promise<void> {
   return invoke("pty_write", { id, data });
 }

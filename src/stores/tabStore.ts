@@ -3,6 +3,13 @@ import { ptyClose } from "../lib/ipc";
 
 export type LayoutMode = "single" | "split-h" | "split-v" | "grid";
 
+export interface SshConfig {
+  hostname: string;
+  port: number;
+  username: string;
+  keyPath?: string;
+}
+
 export interface Tab {
   id: string;
   terminalId: string;
@@ -10,6 +17,7 @@ export interface Tab {
   cwd?: string;
   shell?: string;
   shellType: "bash" | "zsh" | "powershell" | "cmd" | "ssh" | "custom";
+  sshConfig?: SshConfig;
 }
 
 interface TabState {
@@ -21,6 +29,7 @@ interface TabState {
   removeTab: (id: string) => void;
   setActiveTab: (id: string) => void;
   renameTab: (id: string, label: string) => void;
+  renameByTerminalId: (terminalId: string, label: string) => void;
   reorderTabs: (fromIndex: number, toIndex: number) => void;
   duplicateTab: (id: string) => string;
   setLayout: (layout: LayoutMode) => void;
@@ -71,6 +80,7 @@ export const useTabStore = create<TabState>((set, get) => ({
       cwd: partial?.cwd,
       shell: partial?.shell,
       shellType: partial?.shellType ?? detectShellType(partial?.shell),
+      sshConfig: partial?.sshConfig,
     };
     set((state) => {
       const newTabs = [...state.tabs, tab];
@@ -118,6 +128,12 @@ export const useTabStore = create<TabState>((set, get) => ({
   renameTab: (id, label) => {
     set((state) => ({
       tabs: state.tabs.map((t) => (t.id === id ? { ...t, label } : t)),
+    }));
+  },
+
+  renameByTerminalId: (terminalId, label) => {
+    set((state) => ({
+      tabs: state.tabs.map((t) => (t.terminalId === terminalId ? { ...t, label } : t)),
     }));
   },
 

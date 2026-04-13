@@ -100,7 +100,7 @@ export function TerminalTab() {
               <span className="truncate">{tab.label}</span>
             </div>
             <div className={cn("h-full w-full", showLabel && "pt-5")}>
-              <TerminalPane id={tab.terminalId} cwd={tab.cwd} shell={tab.shell} />
+              <TerminalPane id={tab.terminalId} cwd={tab.cwd} shell={tab.shell} sshConfig={tab.sshConfig} />
             </div>
           </div>
         );

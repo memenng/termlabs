@@ -4,8 +4,9 @@ import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { SearchAddon } from "@xterm/addon-search";
 import { Channel } from "@tauri-apps/api/core";
-import { ptySpawn, ptyWrite, ptyResize } from "../lib/ipc";
+import { ptySpawn, ptySpawnSsh, ptyWrite, ptyResize } from "../lib/ipc";
 import type { PtyEvent } from "../lib/ipc";
+import { useTabStore, type SshConfig } from "../stores/tabStore";
 import "@xterm/xterm/css/xterm.css";
 import "../styles/terminal.css";
 
@@ -13,6 +14,7 @@ interface UseTerminalOptions {
   id: string;
   cwd?: string;
   shell?: string;
+  sshConfig?: SshConfig;
   onExit?: (id: string) => void;
 }
 
@@ -91,13 +93,31 @@ export function useTerminal(options: UseTerminalOptions) {
 
     const id = options.id;
 
-    ptySpawn({
-      id,
-      rows: terminal.rows,
-      cols: terminal.cols,
-      cwd: options.cwd,
-      shell: options.shell,
-      onData: channel,
+    if (options.sshConfig) {
+      ptySpawnSsh({
+        id,
+        rows: terminal.rows,
+        cols: terminal.cols,
+        hostname: options.sshConfig.hostname,
+        port: options.sshConfig.port,
+        username: options.sshConfig.username,
+        keyPath: options.sshConfig.keyPath,
+        onData: channel,
+      });
+    } else {
+      ptySpawn({
+        id,
+        rows: terminal.rows,
+        cols: terminal.cols,
+        cwd: options.cwd,
+        shell: options.shell,
+        onData: channel,
+      });
+    }
+
+    const titleDisposable = terminal.onTitleChange((title) => {
+      const label = title.split("/").pop() || title.split(":").pop()?.trim() || title;
+      useTabStore.getState().renameByTerminalId(id, label);
     });
 
     const dataDisposable = terminal.onData((data) => {
@@ -123,6 +143,7 @@ export function useTerminal(options: UseTerminalOptions) {
 
     cleanupRef.current = () => {
       resizeObserver.disconnect();
+      titleDisposable.dispose();
       dataDisposable.dispose();
       resizeDisposable.dispose();
       terminal.dispose();
@@ -139,7 +160,7 @@ export function useTerminal(options: UseTerminalOptions) {
       cleanupRef.current?.();
       cleanupRef.current = null;
     };
-  }, [options.id, options.cwd, options.shell]);
+  }, [options.id, options.cwd, options.shell, options.sshConfig]);
 
   const search = (query: string) => {
     searchAddonRef.current?.findNext(query);

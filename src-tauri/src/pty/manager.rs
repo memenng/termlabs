@@ -110,6 +110,79 @@ impl PtyManager {
         Ok(())
     }
 
+    pub fn spawn_with_command(
+        &self,
+        id: String,
+        rows: u16,
+        cols: u16,
+        command: String,
+        args: Vec<String>,
+        on_data: Channel<PtyEvent>,
+    ) -> Result<(), String> {
+        let pty_system = native_pty_system();
+        let size = PtySize { rows, cols, pixel_width: 0, pixel_height: 0 };
+
+        let pair = pty_system.openpty(size).map_err(|e| format!("Failed to open PTY: {e}"))?;
+
+        let mut cmd = CommandBuilder::new(&command);
+        for arg in &args {
+            cmd.arg(arg);
+        }
+
+        pair.slave.spawn_command(cmd).map_err(|e| format!("Failed to spawn command: {e}"))?;
+
+        let reader = pair.master.try_clone_reader().map_err(|e| format!("Failed to clone reader: {e}"))?;
+        let writer = pair.master.take_writer().map_err(|e| format!("Failed to take writer: {e}"))?;
+
+        let gen = GENERATION.fetch_add(1, Ordering::SeqCst);
+
+        let session = PtySession {
+            master: Arc::new(Mutex::new(pair.master)),
+            writer: Arc::new(Mutex::new(writer)),
+            generation: gen,
+        };
+
+        let mut sessions = self.sessions.lock();
+        sessions.remove(&id);
+        sessions.insert(id.clone(), session);
+        drop(sessions);
+
+        let sessions = self.sessions.clone();
+        let pty_id = id.clone();
+        thread::spawn(move || {
+            let mut buf_reader = BufReader::new(reader);
+            let mut buf = [0u8; 4096];
+            loop {
+                match buf_reader.read(&mut buf) {
+                    Ok(0) => {
+                        let mut map = sessions.lock();
+                        if map.get(&pty_id).map_or(false, |s| s.generation == gen) {
+                            let _ = on_data.send(PtyEvent::Exit { id: pty_id.clone() });
+                            map.remove(&pty_id);
+                        }
+                        break;
+                    }
+                    Ok(n) => {
+                        let data = String::from_utf8_lossy(&buf[..n]).to_string();
+                        if on_data.send(PtyEvent::Data { id: pty_id.clone(), data }).is_err() {
+                            break;
+                        }
+                    }
+                    Err(_) => {
+                        let mut map = sessions.lock();
+                        if map.get(&pty_id).map_or(false, |s| s.generation == gen) {
+                            let _ = on_data.send(PtyEvent::Exit { id: pty_id.clone() });
+                            map.remove(&pty_id);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+
+        Ok(())
+    }
+
     pub fn write(&self, id: &str, data: &[u8]) -> Result<(), String> {
         let sessions = self.sessions.lock();
         let session = sessions.get(id).ok_or("Session not found")?;
