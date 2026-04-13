@@ -75,6 +75,7 @@ export const useTabStore = create<TabState>((set, get) => ({
   visibleTabIds: [],
 
   addTab: (partial) => {
+    if (get().tabs.length >= 4) return "";
     const id = generateId();
     const terminalId = generateId();
     const tab: Tab = {
