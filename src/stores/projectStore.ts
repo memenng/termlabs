@@ -15,6 +15,10 @@ interface ProjectState {
   removeProject: (id: string) => Promise<void>;
 }
 
+function sortAZ(projects: Project[]): Project[] {
+  return [...projects].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+}
+
 export const useProjectStore = create<ProjectState>((set) => ({
   projects: [],
   loading: false,
@@ -22,12 +26,12 @@ export const useProjectStore = create<ProjectState>((set) => ({
   fetchProjects: async () => {
     set({ loading: true });
     const projects = await invoke<Project[]>("project_list");
-    set({ projects, loading: false });
+    set({ projects: sortAZ(projects), loading: false });
   },
 
   addProject: async (name, path) => {
     const project = await invoke<Project>("project_add", { name, path });
-    set((state) => ({ projects: [...state.projects, project] }));
+    set((state) => ({ projects: sortAZ([...state.projects, project]) }));
   },
 
   removeProject: async (id) => {

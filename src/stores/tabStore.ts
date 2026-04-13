@@ -48,24 +48,10 @@ function maxSlots(layout: LayoutMode): number {
   }
 }
 
-function computeVisibleTabs(tabs: Tab[], activeTabId: string | null, layout: LayoutMode): string[] {
+function computeVisibleTabs(tabs: Tab[], _activeTabId: string | null, layout: LayoutMode): string[] {
   const slots = maxSlots(layout);
-  if (slots === 1) {
-    return activeTabId ? [activeTabId] : [];
-  }
-
-  // Start with active tab, then fill remaining slots with other tabs in order
-  const result: string[] = [];
-  if (activeTabId) result.push(activeTabId);
-
-  for (const tab of tabs) {
-    if (result.length >= slots) break;
-    if (!result.includes(tab.id)) {
-      result.push(tab.id);
-    }
-  }
-
-  return result;
+  // Always use tab order (1-2-3-4), never reorder based on active tab
+  return tabs.slice(0, slots).map((t) => t.id);
 }
 
 export const useTabStore = create<TabState>((set, get) => ({
