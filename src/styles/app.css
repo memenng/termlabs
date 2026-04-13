@@ -4,19 +4,27 @@
 @theme {
   --font-sans: "Satoshi", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --color-bg-primary: #0a0a0f;
-  --color-bg-secondary: #111118;
-  --color-bg-tertiary: #1a1a24;
-  --color-border: #2a2a3a;
-  --color-text-primary: #e4e4ed;
-  --color-text-secondary: #8888a0;
+
+  --color-bg-primary: #0c0c12;
+  --color-bg-secondary: #13131b;
+  --color-bg-tertiary: #1c1c28;
+  --color-bg-elevated: #1a1a26;
+  --color-border: #ffffff0a;
+  --color-border-subtle: #ffffff06;
+  --color-text-primary: #e8e8f0;
+  --color-text-secondary: #7c7c96;
+  --color-text-tertiary: #4e4e64;
   --color-accent: #6366f1;
   --color-accent-hover: #818cf8;
-  --color-success: #22c55e;
-  --color-danger: #ef4444;
+  --color-accent-glow: #6366f120;
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  --color-surface-glass: #16161e99;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -25,8 +33,42 @@ html, body, #root {
   font-family: var(--font-sans);
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
+}
+
+/* macOS-style floating sidebar glass effect */
+.sidebar-glass {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+/* Subtle inner border for glass surfaces */
+.glass-border {
+  box-shadow:
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.06),
+    0 0 0 0.5px rgba(0, 0, 0, 0.3);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.14);
 }

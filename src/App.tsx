@@ -19,7 +19,8 @@ function App() {
   const { fetchSettings } = useSettingsStore();
   const [activeView, setActiveView] = useState<"projects" | "ssh">("projects");
   const [modal, setModal] = useState<ModalType>(null);
-  const [editingSshConnection, setEditingSshConnection] = useState<SshConnection | null>(null);
+  const [editingSshConnection, setEditingSshConnection] =
+    useState<SshConnection | null>(null);
 
   useTheme();
 
@@ -34,23 +35,9 @@ function App() {
   }, []);
 
   const handleNavigate = (view: "projects" | "ssh" | "settings" | "about") => {
-    if (view === "settings") {
-      setModal("settings");
-    } else if (view === "about") {
-      setModal("about");
-    } else {
-      setActiveView(view);
-    }
-  };
-
-  const handleSshEdit = (conn: SshConnection) => {
-    setEditingSshConnection(conn);
-    setModal("ssh-form");
-  };
-
-  const handleSshAdd = () => {
-    setEditingSshConnection(null);
-    setModal("ssh-form");
+    if (view === "settings") setModal("settings");
+    else if (view === "about") setModal("about");
+    else setActiveView(view);
   };
 
   const closeModal = () => {
@@ -59,26 +46,27 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen w-screen bg-bg-primary text-text-primary font-sans rounded-xl overflow-hidden">
-      {/* Sidebar */}
+    <div className="flex h-screen w-screen bg-bg-primary text-text-primary font-sans overflow-hidden">
+      {/* Floating sidebar */}
       <Sidebar
         onNavigate={handleNavigate}
         activeView={activeView}
-        onSshAdd={handleSshAdd}
-        onSshEdit={handleSshEdit}
+        onSshAdd={() => {
+          setEditingSshConnection(null);
+          setModal("ssh-form");
+        }}
+        onSshEdit={(conn) => {
+          setEditingSshConnection(conn);
+          setModal("ssh-form");
+        }}
         onKeyManager={() => setModal("key-manager")}
       />
 
-      {/* Main content */}
+      {/* Main content area */}
       <div className="flex flex-col flex-1 min-w-0">
-        {/* Top area with drag region for macOS traffic lights */}
-        <div
-          data-tauri-drag-region
-          className="h-[52px] shrink-0 flex items-end"
-        >
-          <div className="flex-1">
-            <TabBar />
-          </div>
+        {/* Top bar: drag region + tabs */}
+        <div data-tauri-drag-region className="h-[52px] shrink-0 flex items-end px-1">
+          <TabBar />
         </div>
 
         {/* Terminal area */}
@@ -94,7 +82,11 @@ function App() {
           <AboutModal open={true} onClose={closeModal} />
         )}
         {modal === "ssh-form" && (
-          <SSHForm open={true} onClose={closeModal} editConnection={editingSshConnection} />
+          <SSHForm
+            open={true}
+            onClose={closeModal}
+            editConnection={editingSshConnection}
+          />
         )}
         {modal === "key-manager" && (
           <KeyManager open={true} onClose={closeModal} />
