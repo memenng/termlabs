@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { TitleBar } from "./components/layout/TitleBar";
 import { TabBar } from "./components/layout/TabBar";
 import { Sidebar } from "./components/layout/Sidebar";
 import { TerminalTab } from "./components/terminal/TerminalTab";
@@ -60,22 +59,33 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-bg-primary text-text-primary font-sans">
-      <TitleBar />
-      <div className="flex flex-1 min-h-0">
-        <Sidebar
-          onNavigate={handleNavigate}
-          activeView={activeView}
-          onSshAdd={handleSshAdd}
-          onSshEdit={handleSshEdit}
-          onKeyManager={() => setModal("key-manager")}
-        />
-        <div className="flex flex-col flex-1 min-w-0">
-          <TabBar />
-          <TerminalTab />
+    <div className="flex h-screen w-screen bg-bg-primary text-text-primary font-sans rounded-xl overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar
+        onNavigate={handleNavigate}
+        activeView={activeView}
+        onSshAdd={handleSshAdd}
+        onSshEdit={handleSshEdit}
+        onKeyManager={() => setModal("key-manager")}
+      />
+
+      {/* Main content */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Top area with drag region for macOS traffic lights */}
+        <div
+          data-tauri-drag-region
+          className="h-[52px] shrink-0 flex items-end"
+        >
+          <div className="flex-1">
+            <TabBar />
+          </div>
         </div>
+
+        {/* Terminal area */}
+        <TerminalTab />
       </div>
 
+      {/* Modals */}
       <AnimatePresence>
         {modal === "settings" && (
           <SettingsModal open={true} onClose={closeModal} />
