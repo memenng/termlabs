@@ -11,37 +11,32 @@
 - [x] Animated TabBar (drag reorder, context menu, shell colors)
 - [x] Wire tabs to terminal panes
 - [x] Layout mode (single / split-h / split-v / grid max 4)
-- [x] Aceternity-style collapsible sidebar (hover + pin)
-- [x] Project manager (add folder, cd on click, right-click new tab)
+- [x] Apple Notes style: floating glass sidebar, native traffic lights
+- [x] Project manager (add folder, cd on click, right-click new tab, auto-sort A-Z)
 - [x] SSH backend (CRUD, ~/.ssh/config import, key management)
 - [x] SSH frontend (tree, form, key manager modals)
+- [x] SSH terminal session (click connection → open SSH tab)
 - [x] Settings store + modal (theme, font, cursor, shell, bell)
 - [x] About modal (version, OS, update check)
-- [x] Custom window title bar
 - [x] GitHub Actions CI (lint, test, build x4 platforms)
 - [x] ESLint + Prettier config
+- [x] Max 4 terminals with toast notification
+- [x] Layout buttons pinned right in tab bar
+- [x] Persistent layout positions (1=top-left, 2=top-right, 3=bottom-left, 4=bottom-right)
+- [x] Keyboard shortcuts (Cmd+T/W/1-4, Cmd+B sidebar, Cmd+F search)
+- [x] Search in terminal (Cmd+F, floating search bar)
+- [x] Bundle fonts offline (Satoshi + JetBrains Mono in public/fonts/)
+- [x] Tab label auto-detect (shows current directory)
+- [x] App icon (diamond + cursor)
+- [x] Production build (.dmg 5.4MB)
 - [x] CLAUDE.md
 
-## Bug Fixes Needed
-- [ ] Test tombol + (add tab) — verify terminal muncul dan persist saat switch
-- [ ] Test layout split/grid — verify terminal tetap hidup di semua mode
-- [ ] Test folder click cd — verify cd jalan di terminal aktif
-- [ ] Test close tab (X) — verify PTY di-close properly
-
-## Next Up
-- [ ] Wire SSH terminal session (click SSH connection → open SSH tab)
-- [ ] SFTP file browser panel
-- [ ] Keyboard shortcuts (customizable, wired to terminal actions)
-- [ ] Auto-updater (Tauri updater endpoint setup)
-- [ ] Polish Aceternity UI design (glassmorphism, gradients, transitions)
-- [ ] Font loading: bundle Satoshi + JetBrains Mono locally (offline support)
-- [ ] Search in terminal (wire SearchAddon UI)
-- [ ] Tab label auto-detect (show current dir / process name)
-
 ## Nice to Have
-- [ ] Drag tab to reorder in split/grid view
-- [ ] Terminal themes / color scheme picker
+- [ ] Terminal color scheme picker
 - [ ] Import/export settings
 - [ ] Session restore on app restart
 - [ ] Notification on long-running command finish
-- [ ] Snippets / command palette
+- [ ] Command snippets / palette
+- [ ] SFTP file browser
+- [ ] Auto-updater (Tauri updater endpoint)
+- [ ] Drag tab to reorder in split/grid view
