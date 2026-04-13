@@ -58,7 +58,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
 
             {/* Logo */}
             <div className="flex justify-center mb-4">
-              <span className="text-5xl text-accent font-bold select-none">&#9670;</span>
+              <img src="/icons/app-icon.png" alt="TermLabs" className="w-20 h-20 rounded-xl" />
             </div>
 
             {/* App name and version */}
