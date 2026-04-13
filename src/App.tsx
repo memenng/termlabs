@@ -34,6 +34,45 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.metaKey) return;
+
+      const state = useTabStore.getState();
+
+      switch (e.key) {
+        case "t": {
+          e.preventDefault();
+          if (state.tabs.length < 4) {
+            state.addTab();
+          }
+          break;
+        }
+        case "w": {
+          e.preventDefault();
+          if (state.activeTabId) {
+            state.removeTab(state.activeTabId);
+          }
+          break;
+        }
+        case "1":
+        case "2":
+        case "3":
+        case "4": {
+          const idx = Number(e.key) - 1;
+          if (state.tabs[idx]) {
+            e.preventDefault();
+            state.setActiveTab(state.tabs[idx].id);
+          }
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleNavigate = (view: "projects" | "ssh" | "settings" | "about") => {
     if (view === "settings") setModal("settings");
     else if (view === "about") setModal("about");
