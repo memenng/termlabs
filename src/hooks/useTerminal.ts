@@ -37,7 +37,7 @@ export function useTerminal(options: UseTerminalOptions) {
     const terminal = new Terminal({
       fontFamily: '"JetBrains Mono", monospace',
       fontSize: 14,
-      lineHeight: 1.4,
+      lineHeight: 1.5,
       cursorBlink: true,
       cursorStyle: "bar",
       macOptionIsMeta: true,

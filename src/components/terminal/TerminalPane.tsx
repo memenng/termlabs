@@ -53,7 +53,7 @@ export function TerminalPane({ id, cwd, shell, sshConfig, onExit }: TerminalPane
 
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full bg-bg-primary" />
+      <div ref={containerRef} className="h-full w-full" style={{ backgroundColor: "#0a0a0f" }} />
 
       <AnimatePresence>
         {showSearch && (
