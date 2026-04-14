@@ -19,6 +19,8 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>("idle");
   const [updateVersion, setUpdateVersion] = useState("");
   const [updateError, setUpdateError] = useState("");
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadTotal, setDownloadTotal] = useState(0);
 
   useEffect(() => {
     if (open) {
@@ -50,10 +52,26 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
 
   const handleDownloadAndInstall = async () => {
     setUpdateStatus("downloading");
+    setDownloadProgress(0);
+    setDownloadTotal(0);
     try {
       const update = await check();
       if (update) {
-        await update.downloadAndInstall();
+        let downloaded = 0;
+        await update.downloadAndInstall((event) => {
+          switch (event.event) {
+            case "Started":
+              setDownloadTotal(event.data.contentLength ?? 0);
+              break;
+            case "Progress":
+              downloaded += event.data.chunkLength;
+              setDownloadProgress(downloaded);
+              break;
+            case "Finished":
+              setDownloadProgress(downloadTotal);
+              break;
+          }
+        });
         await relaunch();
       }
     } catch (e) {
@@ -160,10 +178,31 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
               )}
 
               {updateStatus === "downloading" && (
-                <button disabled className="inline-flex items-center gap-2 px-4 py-2 bg-accent/50 text-white rounded-lg text-sm opacity-70">
-                  <IconRefresh size={14} className="animate-spin" />
-                  Downloading...
-                </button>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-2 text-sm text-text-secondary">
+                    <IconRefresh size={14} className="animate-spin" />
+                    {downloadTotal > 0
+                      ? `Downloading... ${Math.round((downloadProgress / downloadTotal) * 100)}%`
+                      : "Downloading..."}
+                  </div>
+                  <div className="w-full h-1.5 bg-bg-primary rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-accent rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{
+                        width: downloadTotal > 0
+                          ? `${(downloadProgress / downloadTotal) * 100}%`
+                          : "100%",
+                      }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  </div>
+                  {downloadTotal > 0 && (
+                    <p className="text-[10px] text-text-tertiary">
+                      {(downloadProgress / 1024 / 1024).toFixed(1)} / {(downloadTotal / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                  )}
+                </div>
               )}
 
               {updateStatus === "error" && (
