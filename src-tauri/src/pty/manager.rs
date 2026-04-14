@@ -49,6 +49,7 @@ impl PtyManager {
         });
 
         let mut cmd = CommandBuilder::new(&shell_cmd);
+        cmd.env("TERM", "xterm-256color");
         if let Some(dir) = cwd {
             cmd.cwd(dir);
         }
@@ -125,6 +126,7 @@ impl PtyManager {
         let pair = pty_system.openpty(size).map_err(|e| format!("Failed to open PTY: {e}"))?;
 
         let mut cmd = CommandBuilder::new(&command);
+        cmd.env("TERM", "xterm-256color");
         for arg in &args {
             cmd.arg(arg);
         }

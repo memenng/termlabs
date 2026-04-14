@@ -39,6 +39,8 @@ export function useTerminal(options: UseTerminalOptions) {
       lineHeight: 1.4,
       cursorBlink: true,
       cursorStyle: "bar",
+      macOptionIsMeta: true,
+      macOptionClickForcesSelection: true,
       theme: {
         background: "#0a0a0f",
         foreground: "#e4e4ed",
