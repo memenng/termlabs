@@ -25,31 +25,11 @@ Install and load `@xterm/addon-image` in the terminal rendering pipeline.
 - `sixelPaletteLimit: 256` — Standard Sixel palette
 - `storageLimit: 128` — Max images in scroll buffer to prevent memory bloat
 
-### Section 2: Backend — Binary-safe PTY Data Streaming
+### Section 2: Backend — No Changes Needed
 
-Current PTY reader uses `String::from_utf8_lossy` which corrupts binary data in image escape sequences. Fix to binary-safe streaming.
+After analysis, the Rust backend does NOT need changes. Both iTerm2 IIP (base64 payload) and Sixel (ASCII 0x3F-0x7E) protocols encode image data as ASCII-safe text. `String::from_utf8_lossy` passes them through without corruption. The addon handles reassembling escape sequences across multiple `terminal.write()` calls.
 
-**Changes in `src-tauri/src/pty/manager.rs`:**
-- Replace `String::from_utf8_lossy` with base64 encoding of raw bytes before sending via Channel
-- Update `PtyEvent::Data` to carry base64-encoded string
-
-**Changes in `src/lib/ipc.ts`:**
-- Update `PtyEvent` type — data field now contains base64-encoded string
-
-**Changes in `src/hooks/useTerminal.ts`:**
-- Decode base64 string back to `Uint8Array` on receive
-- Use `terminal.write(Uint8Array)` instead of `terminal.write(string)` — xterm.js v6 natively supports binary write
-
-**New data flow:**
-```
-PTY read (raw bytes)
-  → base64 encode (Rust)
-  → Channel send as string
-  → base64 decode (JS)
-  → terminal.write(Uint8Array)
-```
-
-Side benefit: fixes occasional corruption of emoji and special characters from `from_utf8_lossy`.
+**Note:** Requires upgrading all xterm packages to beta channel (`6.1.0-beta.197`) since `@xterm/addon-image` stable (0.9.0) was built for xterm v5.
 
 ### Section 3: Testing & Verification
 
@@ -66,10 +46,8 @@ Manual verification (no unit tests needed — visual behavior):
 
 ## Files Modified
 
-- `package.json` — add `@xterm/addon-image` dependency
-- `src/hooks/useTerminal.ts` — load ImageAddon, switch to binary write
-- `src/lib/ipc.ts` — update PtyEvent type for base64 data
-- `src-tauri/src/pty/manager.rs` — base64 encode PTY output
+- `package.json` — upgrade xterm packages to beta channel, add `@xterm/addon-image`
+- `src/hooks/useTerminal.ts` — import and load ImageAddon
 
 ## Out of Scope
 
