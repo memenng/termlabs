@@ -1,36 +1,65 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { IconX, IconBrandGithub, IconFileText, IconRefresh } from "@tabler/icons-react";
+import { IconX, IconBrandGithub, IconFileText, IconRefresh, IconDownload } from "@tabler/icons-react";
 import { getVersion } from "@tauri-apps/api/app";
 import { platform, arch } from "@tauri-apps/plugin-os";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 
 interface AboutModalProps {
   open: boolean;
   onClose: () => void;
 }
 
+type UpdateStatus = "idle" | "checking" | "available" | "downloading" | "up-to-date" | "error";
+
 export function AboutModal({ open, onClose }: AboutModalProps) {
   const [version, setVersion] = useState("0.0.0");
   const [osInfo, setOsInfo] = useState({ platform: "", arch: "" });
-  const [checking, setChecking] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>("idle");
+  const [updateVersion, setUpdateVersion] = useState("");
+  const [updateError, setUpdateError] = useState("");
 
   useEffect(() => {
     if (open) {
       getVersion().then(setVersion).catch(() => {});
       try {
-        const p = platform();
-        const a = arch();
-        setOsInfo({ platform: p, arch: a });
+        setOsInfo({ platform: platform(), arch: arch() });
       } catch {
         // OS plugin may not be available in dev
       }
     }
   }, [open]);
 
-  const handleCheckUpdates = () => {
-    setChecking(true);
-    // Simulated check — in production this would call an update API
-    setTimeout(() => setChecking(false), 2000);
+  const handleCheckUpdates = async () => {
+    setUpdateStatus("checking");
+    setUpdateError("");
+    try {
+      const update = await check();
+      if (update) {
+        setUpdateVersion(update.version);
+        setUpdateStatus("available");
+      } else {
+        setUpdateStatus("up-to-date");
+      }
+    } catch (e) {
+      setUpdateError(String(e));
+      setUpdateStatus("error");
+    }
+  };
+
+  const handleDownloadAndInstall = async () => {
+    setUpdateStatus("downloading");
+    try {
+      const update = await check();
+      if (update) {
+        await update.downloadAndInstall();
+        await relaunch();
+      }
+    } catch (e) {
+      setUpdateError(String(e));
+      setUpdateStatus("error");
+    }
   };
 
   return (
@@ -75,7 +104,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
             {/* Links */}
             <div className="flex justify-center gap-4 mt-5">
               <a
-                href="https://github.com/termlabs/termlabs"
+                href="https://github.com/memenng/termlabs"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
@@ -84,7 +113,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                 GitHub
               </a>
               <a
-                href="https://github.com/termlabs/termlabs/blob/main/CHANGELOG.md"
+                href="https://github.com/memenng/termlabs/blob/main/CHANGELOG.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
@@ -94,15 +123,63 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
               </a>
             </div>
 
-            {/* Check for updates */}
-            <button
-              onClick={handleCheckUpdates}
-              disabled={checking}
-              className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-bg-primary border border-border rounded-lg text-sm text-text-primary hover:border-accent transition-colors disabled:opacity-50"
-            >
-              <IconRefresh size={14} className={checking ? "animate-spin" : ""} />
-              {checking ? "Checking..." : "Check for Updates"}
-            </button>
+            {/* Update section */}
+            <div className="mt-5">
+              {updateStatus === "idle" && (
+                <button
+                  onClick={handleCheckUpdates}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-bg-primary border border-border rounded-lg text-sm text-text-primary hover:border-accent transition-colors"
+                >
+                  <IconRefresh size={14} />
+                  Check for Updates
+                </button>
+              )}
+
+              {updateStatus === "checking" && (
+                <button disabled className="inline-flex items-center gap-2 px-4 py-2 bg-bg-primary border border-border rounded-lg text-sm text-text-secondary opacity-70">
+                  <IconRefresh size={14} className="animate-spin" />
+                  Checking...
+                </button>
+              )}
+
+              {updateStatus === "up-to-date" && (
+                <p className="text-sm text-success">You're on the latest version!</p>
+              )}
+
+              {updateStatus === "available" && (
+                <div>
+                  <p className="text-sm text-accent mb-2">Version {updateVersion} available!</p>
+                  <button
+                    onClick={handleDownloadAndInstall}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <IconDownload size={14} />
+                    Download & Install
+                  </button>
+                </div>
+              )}
+
+              {updateStatus === "downloading" && (
+                <button disabled className="inline-flex items-center gap-2 px-4 py-2 bg-accent/50 text-white rounded-lg text-sm opacity-70">
+                  <IconRefresh size={14} className="animate-spin" />
+                  Downloading...
+                </button>
+              )}
+
+              {updateStatus === "error" && (
+                <div>
+                  <p className="text-sm text-danger mb-2">Update check failed</p>
+                  <p className="text-xs text-text-secondary mb-2">{updateError}</p>
+                  <button
+                    onClick={handleCheckUpdates}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-bg-primary border border-border rounded-lg text-xs text-text-primary hover:border-accent transition-colors"
+                  >
+                    <IconRefresh size={12} />
+                    Retry
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Credits */}
             <p className="text-xs text-text-secondary mt-5">

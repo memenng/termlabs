@@ -13,6 +13,8 @@
     "core:window:allow-close",
     "shell:allow-open",
     "dialog:allow-open",
-    "os:default"
+    "os:default",
+    "updater:default",
+    "process:allow-restart"
   ]
 }
