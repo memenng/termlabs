@@ -1,6 +1,6 @@
 # TermLabs
 
-Cross-platform terminal emulator built with Tauri v2. Version 0.2.3.
+Cross-platform terminal emulator built with Tauri v2. Version 0.2.4.
 
 ## Tech Stack
 
