@@ -1,0 +1,11 @@
+{
+  "version": "v0.2.4",
+  "notes": "Add inline image support (iTerm2 IIP + Sixel)",
+  "pub_date": "2026-04-14T00:00:00Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUQ3FpeHE2VFNtMGFBdW04RU9xck9rWnR4WTdURnprVm91MllHM2dWU1VmV3dsUi9HOGdYZkhaSGRObUtydkF5VlJ5Y0R5dzczN3lvOE15NE9SQUsxUmdnZnVCS0xVY0FVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc2MTg0MTg0CWZpbGU6VGVybUxhYnMuYXBwLnRhci5negpUVFp0RVVOOE04WjNCL28wazFDem5hdEZPcGR3S1ZYeDE0R3R2a0pwOThzSkJQVWREVlRQcFBMSmgrbHFYaXFuNTB6d0NidlE4Y0g5ZHpldlFrcVNBQT09Cg==",
+      "url": "https://github.com/memenng/termlabs/releases/download/v0.2.4/TermLabs.app.tar.gz"
+    }
+  }
+}
