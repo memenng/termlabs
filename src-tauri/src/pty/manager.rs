@@ -185,11 +185,10 @@ impl PtyManager {
         Ok(())
     }
 
-    pub fn write(&self, id: &str, data: &[u8]) -> Result<(), String> {
+    pub fn get_writer(&self, id: &str) -> Result<Arc<Mutex<Box<dyn Write + Send>>>, String> {
         let sessions = self.sessions.lock();
         let session = sessions.get(id).ok_or("Session not found")?;
-        let result = session.writer.lock().write_all(data).map_err(|e| format!("Write failed: {e}"));
-        result
+        Ok(session.writer.clone())
     }
 
     pub fn resize(&self, id: &str, rows: u16, cols: u16) -> Result<(), String> {

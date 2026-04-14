@@ -1,4 +1,5 @@
 use crate::pty::manager::{PtyEvent, PtyManager};
+use std::io::Write;
 use tauri::ipc::Channel;
 use tauri::State;
 
@@ -38,8 +39,18 @@ pub fn pty_spawn_ssh(
 }
 
 #[tauri::command]
-pub fn pty_write(manager: State<'_, PtyManager>, id: String, data: String) -> Result<(), String> {
-    manager.write(&id, data.as_bytes())
+pub async fn pty_write(manager: State<'_, PtyManager>, id: String, data: String) -> Result<(), String> {
+    let writer = manager.get_writer(&id)?;
+    let data_bytes = data.into_bytes();
+    let write_task = tokio::task::spawn_blocking(move || {
+        let mut w = writer.lock();
+        w.write_all(&data_bytes).map_err(|e| format!("Write failed: {e}"))
+    });
+    match tokio::time::timeout(std::time::Duration::from_secs(1), write_task).await {
+        Ok(Ok(result)) => result,
+        Ok(Err(e)) => Err(format!("Write task failed: {e}")),
+        Err(_) => Err("Write timed out".to_string()),
+    }
 }
 
 #[tauri::command]

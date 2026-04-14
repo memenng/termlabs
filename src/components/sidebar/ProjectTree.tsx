@@ -57,16 +57,19 @@ export function ProjectTree() {
   }, [addProject]);
 
   const handleOpenTerminal = useCallback(
-    (project: Project) => {
+    async (project: Project) => {
       // cd to the project directory in the active terminal
       const state = useTabStore.getState();
       const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
       if (activeTab) {
         const escapedPath = project.path.replace(/'/g, "'\\''");
-        ptyWrite(activeTab.terminalId, `cd '${escapedPath}'\n`);
-        return;
+        try {
+          await ptyWrite(activeTab.terminalId, `cd '${escapedPath}'\n`);
+          return;
+        } catch {
+          // Write failed (terminal busy with running program) — open new tab instead
+        }
       }
-      // Fallback: open new tab if no active terminal
       addTab({ label: project.name, cwd: project.path });
     },
     [addTab]
