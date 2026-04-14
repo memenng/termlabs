@@ -3,6 +3,7 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { SearchAddon } from "@xterm/addon-search";
+import { ImageAddon } from "@xterm/addon-image";
 import { Channel } from "@tauri-apps/api/core";
 import { ptySpawn, ptySpawnSsh, ptyWrite, ptyResize } from "../lib/ipc";
 import type { PtyEvent } from "../lib/ipc";
@@ -80,6 +81,16 @@ export function useTerminal(options: UseTerminalOptions) {
     } catch {
       // WebGL not available, fall back to canvas renderer
     }
+
+    const imageAddon = new ImageAddon({
+      sixelSupport: true,
+      sixelScrolling: true,
+      sixelPaletteLimit: 256,
+      iipSupport: true,
+      storageLimit: 128,
+      showPlaceholder: true,
+    });
+    terminal.loadAddon(imageAddon);
 
     fitAddon.fit();
     terminalRef.current = terminal;
