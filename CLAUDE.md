@@ -9,7 +9,7 @@ Cross-platform terminal emulator built with Tauri v2. Version 0.2.3.
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/vite` plugin, config in `src/styles/app.css` via `@theme`)
 - **UI Components:** Aceternity UI style (custom-built with Tabler Icons)
 - **Animation:** Motion (`motion/react`) — NOT framer-motion
-- **Terminal:** xterm.js + WebGL addon + FitAddon + SearchAddon
+- **Terminal:** xterm.js (beta 6.1.x) + WebGL addon + FitAddon + SearchAddon + ImageAddon (iTerm2 IIP + Sixel)
 - **State:** Zustand
 - **Fonts:** Satoshi (UI), JetBrains Mono (terminal) — bundled locally in `public/fonts/`
 - **Icons:** @tabler/icons-react
@@ -52,6 +52,9 @@ src/
 - React StrictMode is disabled — incompatible with native PTY resource management
 - `terminal.onTitleChange` auto-updates tab labels with current directory
 - `macOptionIsMeta: true` for proper Option key behavior on macOS
+- Inline image rendering via `ImageAddon` — supports iTerm2 IIP + Sixel protocols
+- Addon load order: FitAddon → SearchAddon → WebglAddon → ImageAddon (ImageAddon loaded outside WebGL try/catch — works with both renderers)
+- xterm packages use beta channel (6.1.x) for addon-image compatibility
 
 ### Layout System
 - Each tab = 1 terminal with its own PTY (max 4 tabs)
@@ -153,3 +156,4 @@ open /Applications/TermLabs.app
 - Terminal color scheme picker
 - Session restore on app restart
 - Command snippets / palette
+- Kitty Graphics Protocol support
