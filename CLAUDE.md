@@ -42,6 +42,7 @@ src/
 - PTY is NOT closed on React component unmount — only on explicit tab/terminal close via store actions
 - Each `PtySession` has a `generation` field; reader threads check generation before removing sessions
 - SSH connections spawn via `pty_spawn_ssh` command (runs `ssh` CLI via PTY)
+- `TERM=xterm-256color` set in PTY env for correct key mappings (backspace, etc.)
 
 ### Terminal Rendering
 - `useTerminal` hook manages xterm.js lifecycle via `useEffect` (not ref callback)
@@ -50,6 +51,7 @@ src/
 - PTY resize ignores 0x0 (guarded in both frontend and Rust backend)
 - React StrictMode is disabled — incompatible with native PTY resource management
 - `terminal.onTitleChange` auto-updates tab labels with current directory
+- `macOptionIsMeta: true` for proper Option key behavior on macOS
 
 ### Layout System
 - Each tab = 1 terminal with its own PTY (max 4 tabs)
@@ -104,6 +106,29 @@ npm run format:check       # Prettier check
 npm run tauri build        # Build installer (per platform)
 ```
 
+## Release Flow
+
+```bash
+# 1. Bump version in tauri.conf.json, package.json, Cargo.toml
+# 2. Build with signing key
+TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/termlabs.key)" \
+TAURI_SIGNING_PRIVATE_KEY_PASSWORD="" \
+npm run tauri build
+
+# 3. Create latest.json with signature from .sig file
+# 4. Create GitHub Release
+gh release create v0.x.0 \
+  src-tauri/target/release/bundle/dmg/TermLabs_0.x.0_aarch64.dmg \
+  src-tauri/target/release/bundle/macos/TermLabs.app.tar.gz \
+  latest.json \
+  --title "TermLabs v0.x.0" --notes "..."
+```
+
+- Signing key: `~/.tauri/termlabs.key` (KEEP SECRET)
+- Public key: configured in `tauri.conf.json` plugins.updater.pubkey
+- Updater endpoint: `https://github.com/memenng/termlabs/releases/latest/download/latest.json`
+- Repo: `https://github.com/memenng/termlabs` (public)
+
 ## Install (macOS)
 
 ```bash
@@ -114,7 +139,7 @@ open /Applications/TermLabs.app
 ```
 
 ## Build Outputs
-- macOS: `.dmg` + `.app`
+- macOS: `.dmg` + `.app` + `.tar.gz` (updater) + `.sig` (signature)
 - Windows: `.msi` / `.exe`
 - Linux: `.deb` / `.AppImage`
 
@@ -127,5 +152,4 @@ open /Applications/TermLabs.app
 - SFTP file browser
 - Terminal color scheme picker
 - Session restore on app restart
-- Auto-updater (Tauri updater endpoint)
 - Command snippets / palette
