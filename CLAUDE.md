@@ -152,6 +152,7 @@ open /Applications/TermLabs.app
 - App settings: `~/.config/termlabs/settings.json` (via Tauri path API)
 - SSH connections: `~/.config/termlabs/ssh_connections.json`
 - Projects list: `~/.config/termlabs/projects.json`
+- Files that may contain credentials (e.g. `ssh_connections.json`) are written with `0600` perms on Unix — preserve this when adding new credential-bearing config
 
 ## Nice to Have (Future)
 - SFTP file browser
