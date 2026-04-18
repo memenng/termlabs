@@ -1,6 +1,6 @@
 # TermLabs
 
-Cross-platform terminal emulator built with Tauri v2. Version 0.2.4.
+Cross-platform terminal emulator built with Tauri v2. Version 0.2.5.
 
 ## Tech Stack
 
@@ -55,6 +55,8 @@ src/
 - Inline image rendering via `ImageAddon` — supports iTerm2 IIP + Sixel protocols
 - Addon load order: FitAddon → SearchAddon → WebglAddon → ImageAddon (ImageAddon loaded outside WebGL try/catch — works with both renderers)
 - xterm packages use beta channel (6.1.x) for addon-image compatibility
+- `lineHeight: 1.5` (14px × 1.5 = 21px integer) to avoid sub-pixel rendering artifacts with WebGL
+- Terminal container background must match xterm theme background (`#0a0a0f`) — prevents visible gaps between rows from lineHeight
 
 ### Layout System
 - Each tab = 1 terminal with its own PTY (max 4 tabs)

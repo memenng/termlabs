@@ -21,3 +21,20 @@ Thumbs.db
 # Environment
 .env
 .env.*
+
+# Secrets / signing keys (defensive — keep out of repo even if placed here by mistake)
+*.key
+*.pem
+*.p12
+*.pfx
+*.keystore
+id_rsa
+id_ed25519
+id_ecdsa
+*.mobileprovision
+.tauri/
+
+# Local user config that may contain credentials
+ssh_connections.json
+projects.json
+settings.local.json

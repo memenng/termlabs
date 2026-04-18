@@ -61,7 +61,15 @@ impl SshConnectionManager {
             }
             let data =
                 serde_json::to_string_pretty(&*self.connections.lock()).unwrap_or_default();
-            let _ = fs::write(path, data);
+            if fs::write(path, data).is_ok() {
+                // Restrict to owner-only (0600) since this file may contain passwords
+                // and key passphrases. No-op on Windows.
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    let _ = fs::set_permissions(path, fs::Permissions::from_mode(0o600));
+                }
+            }
         }
     }
 
